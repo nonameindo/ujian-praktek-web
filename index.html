@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pusat Ban Magetan | Racing & Performance</title>
+    
+    <!-- Libraries: Tailwind, FontAwesome, Three.js, SweetAlert2 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <!-- Google Fonts: Orbitron (Racing) & Rajdhani (Tech) -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        magetan: {
+                            dark: '#0a0a0a',
+                            panel: '#151515',
+                            accent: '#ff2e00', // Red
+                            mid: '#ff8c00',    // Orange
+                            light: '#ffd700'   // Yellow
+                        }
+                    },
+                    fontFamily: {
+                        racing: ['Orbitron', 'sans-serif'],
+                        tech: ['Rajdhani', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* --- CUSTOM RACING STYLES --- */
+        body {
+            background-color: #050505;
+            color: #ffffff;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #1a0b0b 0%, transparent 50%),
+                linear-gradient(0deg, rgba(0,0,0,0.9) 0%, rgba(20,20,20,1) 100%);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a0a; }
+        ::-webkit-scrollbar-thumb { background: linear-gradient(to bottom, #ff2e00, #ffd700); border-radius: 4px; }
+
+        /* NFS Heat Style Text Gradient */
+        .nfs-gradient-text {
+            background: linear-gradient(to right, #ff2e00, #ff8c00, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(255, 46, 0, 0.3);
+        }
+
+        /* Neon Glow Box */
+        .racing-card {
+            background: rgba(21, 21, 21, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            clip-path: polygon(0 0, 100% 0, 100% 85%, 95% 100%, 0 100%);
+        }
+
+        .racing-card:hover {
+            transform: translateY(-5px);
+            border-color: #ff2e00;
+            box-shadow: 0 0 15px rgba(255, 46, 0, 0.2);
+        }
+
+        .racing-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: linear-gradient(to bottom, #ff2e00, #ffd700);
+            opacity: 0.7;
+        }
+
+        /* 3D Container */
+        #canvas-container {
+            width: 100%;
+            height: 400px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Button Style */
+        .btn-racing {
+            background: linear-gradient(135deg, #ff2e00 0%, #ff8c00 100%);
+            color: white;
+            clip-path: polygon(10% 0, 100% 0, 100% 100%, 0% 100%);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border: none;
+        }
+
+        .btn-racing:hover {
+            transform: scale(1.05) skewX(-10deg);
+            box-shadow: 0 0 25px rgba(255, 140, 0, 0.6);
+        }
+
+        /* Form Input Styles */
+        .input-racing {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid #333;
+            color: white;
+            transition: 0.3s;
+        }
+        .input-racing:focus {
+            border-color: #ff8c00;
+            outline: none;
+            box-shadow: 0 0 10px rgba(255, 140, 0, 0.2);
+        }
+
+        /* Glitch Animation for Title */
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+        .glitch-hover:hover {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+    </style>
+</head>
+<body class="font-tech text-gray-300">
+
+    <!-- NAVIGATION -->
+    <nav class="fixed w-full z-50 bg-black/80 backdrop-blur-md border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-radiation text-magetan-accent text-2xl animate-spin-slow"></i>
+                <h1 class="font-racing text-2xl tracking-tighter text-white">MAGETAN<span class="text-magetan-accent">TIRE</span></h1>
+            </div>
+            <div class="hidden md:flex gap-8 font-bold uppercase text-sm tracking-widest">
+                <a href="#home" class="hover:text-magetan-mid transition">Home</a>
+                <a href="#experience" class="hover:text-magetan-mid transition">Pengalaman</a>
+                <a href="#order" class="hover:text-magetan-mid transition">Order</a>
+                <a href="#reviews" class="hover:text-magetan-mid transition">Review</a>
+            </div>
+            <a href="#order" class="md:hidden text-magetan-mid text-xl"><i class="fas fa-bars"></i></a>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section id="home" class="min-h-screen pt-20 flex flex-col md:flex-row items-center justify-center relative overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-magetan-accent/10 to-transparent blur-3xl pointer-events-none"></div>
+
+        <!-- Text Content -->
+        <div class="w-full md:w-1/2 px-6 md:pl-20 z-10 text-center md:text-left">
+            <h2 class="text-magetan-mid font-racing text-lg mb-2 tracking-[0.2em] uppercase">Premium Garage</h2>
+            <h1 class="text-5xl md:text-7xl font-racing font-black leading-tight mb-6 glitch-hover">
+                DOMINATE <br>
+                <span class="nfs-gradient-text">THE STREETS</span>
+            </h1>
+            <p class="text-lg md:text-xl mb-8 text-gray-400 border-l-4 border-magetan-accent pl-4">
+                Pusat Ban Terlengkap di Magetan. <br>
+                Kualitas Balap, Harga Bersahabat.
+            </p>
+            <div class="flex flex-col md:flex-row gap-4 justify-center md:justify-start">
+                <a href="#order" class="btn-racing py-4 px-10 text-center rounded-sm">
+                    Pesan Sekarang <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+                <a href="https://wa.me/6281234567890" class="border border-white/20 hover:border-magetan-light py-4 px-8 text-center rounded-sm transition uppercase font-bold tracking-widest hover:bg-white/5">
+                    <i class="fab fa-whatsapp text-green-500 mr-2"></i> Konsultasi
+                </a>
+            </div>
+        </div>
+
+        <!-- 3D Tire Canvas -->
+        <div class="w-full md:w-1/2 h-[50vh] md:h-screen flex items-center justify-center z-10">
+            <div id="canvas-container"></div>
+            <!-- Decorative circle behind tire -->
+            <div class="absolute w-[300px] h-[300px] border-2 border-magetan-accent/30 rounded-full animate-pulse pointer-events-none"></div>
+        </div>
+    </section>
+
+    <!-- EXPERIENCE / STATS SECTION -->
+    <section id="experience" class="py-20 bg-magetan-dark relative">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-racing uppercase mb-2">Mengapa <span class="text-magetan-mid">Kami?</span></h2>
+                <div class="h-1 w-24 bg-gradient-to-r from-magetan-accent to-transparent mx-auto"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Card 1 -->
+                <div class="racing-card p-8">
+                    <i class="fas fa-wrench text-4xl text-magetan-accent mb-4"></i>
+                    <h3 class="text-2xl font-racing mb-2">Teknisi Pro</h3>
+                    <p class="text-gray-400">Pemasangan menggunakan mesin tire changer robotic tanpa merusak velg mahal Anda.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="racing-card p-8">
+                    <i class="fas fa-stopwatch text-4xl text-magetan-mid mb-4"></i>
+                    <h3 class="text-2xl font-racing mb-2">Cepat & Kilat</h3>
+                    <p class="text-gray-400">Ganti ban secepat pitstop F1. Efisiensi waktu adalah prioritas kami.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="racing-card p-8">
+                    <i class="fas fa-medal text-4xl text-magetan-light mb-4"></i>
+                    <h3 class="text-2xl font-racing mb-2">100% Ori</h3>
+                    <p class="text-gray-400">Garansi uang kembali jika ban tidak original. Bridgestone, Michelin, Pirelli tersedia.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ORDER FORM SECTION -->
+    <section id="order" class="py-20 relative bg-neutral-900 bg-opacity-50">
+        <!-- Background Grid -->
+        <div class="absolute inset-0" style="background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+        <div class="max-w-4xl mx-auto px-6 relative z-10">
+            <div class="racing-card p-8 md:p-12 border-t-4 border-t-magetan-accent">
+                <h2 class="text-3xl md:text-4xl font-racing text-center mb-8 uppercase">
+                    Order <span class="text-white">Form</span>
+                </h2>
+
+                <form id="tireOrderForm" class="space-y-6">
+                    <!-- Personal Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-widest text-magetan-mid mb-2">Nama Lengkap</label>
+                            <input type="text" id="nama" name="nama" required class="w-full p-4 rounded bg-black/40 border border-gray-700 focus:border-magetan-accent text-white outline-none" placeholder="Isi nama Anda...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-widest text-magetan-mid mb-2">Nomor WhatsApp</label>
+                            <input type="tel" id="whatsapp" name="whatsapp" required class="w-full p-4 rounded bg-black/40 border border-gray-700 focus:border-magetan-accent text-white outline-none" placeholder="08xxxxx">
+                        </div>
+                    </div>
+
+                    <!-- Tire Selection -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-widest text-magetan-mid mb-2">Kategori Kendaraan</label>
+                            <select id="kategori" name="kategori" onchange="updateBrands()" class="w-full p-4 rounded bg-black/40 border border-gray-700 focus:border-magetan-accent text-white outline-none cursor-pointer">
+                                <option value="" disabled selected>Pilih Kategori</option>
+                                <option value="Motor">Motor (Roda 2)</option>
+                                <option value="Mobil">Mobil (Roda 4)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase tracking-widest text-magetan-mid mb-2">Merk Ban</label>
+                            <select id="merk" name="merk" disabled class="w-full p-4 rounded bg-black/40 border border-gray-700 focus:border-magetan-accent text-white outline-none cursor-pointer disabled:opacity-50">
+                                <option value="">Pilih Kategori Dulu</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Address & Maps -->
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-widest text-magetan-mid mb-2">Alamat Pengiriman / Pemasangan</label>
+                        <div class="flex gap-2 mb-2">
+                            <input type="text" id="alamat" name="alamat" required class="w-full p-4 rounded bg-black/40 border border-gray-700 focus:border-magetan-accent text-white outline-none" placeholder="Masukkan alamat lengkap...">
+                            <button type="button" onclick="getLocation()" class="bg-gray-800 hover:bg-gray-700 text-white p-4 rounded border border-gray-600 transition" title="Gunakan Lokasi Saya">
+                                <i class="fas fa-map-marker-alt text-magetan-accent"></i>
+                            </button>
+                        </div>
+                        <p id="locationStatus" class="text-xs text-gray-500 italic"></p>
+                        
+                        <!-- Simulated Map Preview -->
+                        <div class="w-full h-40 bg-gray-900 rounded mt-2 flex items-center justify-center border border-gray-800 overflow-hidden relative group">
+                            <div class="absolute inset-0 bg-[url('https://maps.googleapis.com/maps/api/staticmap?center=-7.629,111.329&zoom=13&size=600x300&maptype=roadmap&style=feature:all|element:all|saturation:-100|visibility:simplified&style=feature:road|element:geometry|color:0x333333&key=YOUR_API_KEY_PLACEHOLDER')] bg-cover bg-center opacity-30 grayscale group-hover:grayscale-0 transition duration-500"></div>
+                            <span class="z-10 bg-black/70 px-4 py-2 rounded text-xs border border-magetan-accent">
+                                <i class="fas fa-map-marked-alt mr-2"></i> Integrasi Google Maps
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" id="submitBtn" class="w-full btn-racing py-5 mt-4 text-xl font-racing rounded-sm relative overflow-hidden group">
+                        <span class="relative z-10">KIRIM PESANAN</span>
+                        <div class="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition duration-500 skew-x-12"></div>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- REVIEWS SECTION -->
+    <section id="reviews" class="py-20 max-w-7xl mx-auto px-6">
+        <h2 class="text-3xl font-racing text-center mb-12 uppercase">Kata <span class="text-magetan-mid">Riders</span></h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Review 1 -->
+            <div class="bg-magetan-panel p-6 rounded-xl border-l-4 border-magetan-light">
+                <div class="flex text-magetan-light mb-2">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="text-sm text-gray-300 italic mb-4">"Ganti ban buat NMAX disini mantap, style racing look banget tokonya. Pelayanan ramah poll!"</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">Andi Saputra</h4>
+                        <p class="text-xs text-gray-500">NMAX Rider</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review 2 -->
+            <div class="bg-magetan-panel p-6 rounded-xl border-l-4 border-magetan-mid">
+                <div class="flex text-magetan-light mb-2">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star-half-alt"></i>
+                </div>
+                <p class="text-sm text-gray-300 italic mb-4">"Cari ban soft compound buat Civic susah di Magetan, ternyata disini lengkap. Recommended!"</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah" alt="User">
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">Budi Santoso</h4>
+                        <p class="text-xs text-gray-500">Civic Turbo Owner</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review 3 -->
+            <div class="bg-magetan-panel p-6 rounded-xl border-l-4 border-magetan-accent">
+                <div class="flex text-magetan-light mb-2">
+                    <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                </div>
+                <p class="text-sm text-gray-300 italic mb-4">"Harga bersaing, mekanik kerjanya rapih banget. Velg aman ga lecet."</p>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-gray-700 rounded-full overflow-hidden">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Jack" alt="User">
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-sm">Dimas R.</h4>
+                        <p class="text-xs text-gray-500">ZX-25R Rider</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bg-black border-t border-gray-800 py-10 mt-10">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <h2 class="font-racing text-2xl text-white mb-6">PUSAT BAN <span class="text-magetan-accent">MAGETAN</span></h2>
+            
+            <div class="flex justify-center gap-8 mb-8">
+                <a href="#" class="w-12 h-12 flex items-center justify-center rounded-full bg-gray-900 hover:bg-green-600 transition duration-300 text-white text-xl border border-gray-700">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+                <a href="#" class="w-12 h-12 flex items-center justify-center rounded-full bg-gray-900 hover:bg-pink-600 transition duration-300 text-white text-xl border border-gray-700">
+                    <i class="fab fa-instagram"></i>
+                </a>
+                <a href="#" class="w-12 h-12 flex items-center justify-center rounded-full bg-gray-900 hover:bg-blue-600 transition duration-300 text-white text-xl border border-gray-700">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+            </div>
+
+            <p class="text-gray-600 text-sm">
+                &copy; 2024 Pusat Ban Magetan. All Rights Reserved. <br>
+                <span class="text-xs">Racing Style Web Design by Pro Developer.</span>
+            </p>
+        </div>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // --- 1. THREE.JS 3D TIRE ANIMATION ---
+        function init3D() {
+            const container = document.getElementById('canvas-container');
+            const scene = new THREE.Scene();
+            
+            // Camera
+            const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 2.5;
+
+            // Renderer with transparency
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Tire Geometry (Torus)
+            // Radius, Tube, RadialSegments, TubularSegments
+            const geometry = new THREE.TorusGeometry(1.2, 0.4, 16, 100);
+            
+            // Material: Wireframe style for tech look
+            const material = new THREE.MeshStandardMaterial({ 
+                color: 0x1a1a1a,
+                roughness: 0.4,
+                metalness: 0.8,
+                wireframe: false
+            });
+
+            // Wireframe overlay for the "Holographic/Blueprint" look
+            const wireframeGeo = new THREE.WireframeGeometry(geometry);
+            const wireframeMat = new THREE.LineBasicMaterial({ color: 0xff2e00, opacity: 0.3, transparent: true });
+            const wireframe = new THREE.LineSegments(wireframeGeo, wireframeMat);
+
+            const tire = new THREE.Mesh(geometry, material);
+            tire.add(wireframe); // Add wireframe as child
+            scene.add(tire);
+
+            // Rims (Cylinder inside)
+            const rimGeo = new THREE.CylinderGeometry(0.8, 0.8, 0.3, 32);
+            const rimMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 1, roughness: 0.2 });
+            const rim = new THREE.Mesh(rimGeo, rimMat);
+            rim.rotation.x = Math.PI / 2;
+            tire.add(rim);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0x404040, 2); // Soft white light
+            scene.add(ambientLight);
+
+            const pointLight = new THREE.PointLight(0xff2e00, 2, 10); // Red light
+            pointLight.position.set(2, 2, 2);
+            scene.add(pointLight);
+
+            const pointLight2 = new THREE.PointLight(0xffd700, 2, 10); // Yellow light
+            pointLight2.position.set(-2, -2, 2);
+            scene.add(pointLight2);
+
+            // Animation Loop
+            function animate() {
+                requestAnimationFrame(animate);
+                
+                tire.rotation.y += 0.01;
+                tire.rotation.x += 0.005;
+
+                renderer.render(scene, camera);
+            }
+            animate();
+
+            // Handle Resize
+            window.addEventListener('resize', () => {
+                const width = container.clientWidth;
+                const height = container.clientHeight;
+                renderer.setSize(width, height);
+                camera.aspect = width / height;
+                camera.updateProjectionMatrix();
+            });
+        }
+
+        // --- 2. FORM LOGIC (Dynamic Brands) ---
+        const brandData = {
+            "Motor": ["Michelin", "Pirelli", "FDR", "IRC", "Maxxis", "Corsa", "Aspira Premio"],
+            "Mobil": ["Bridgestone", "Dunlop", "Yokohama", "GT Radial", "Achilles", "Hankook", "Toyo Tires"]
+        };
+
+        function updateBrands() {
+            const category = document.getElementById("kategori").value;
+            const brandSelect = document.getElementById("merk");
+            
+            brandSelect.innerHTML = '<option value="" disabled selected>Pilih Merk Ban</option>';
+            brandSelect.disabled = false;
+
+            if (brandData[category]) {
+                brandData[category].forEach(brand => {
+                    const option = document.createElement("option");
+                    option.value = brand;
+                    option.textContent = brand;
+                    brandSelect.appendChild(option);
+                });
+            }
+        }
+
+        // --- 3. GEOLOCATION LOGIC ---
+        function getLocation() {
+            const status = document.getElementById("locationStatus");
+            const addressInput = document.getElementById("alamat");
+
+            if (!navigator.geolocation) {
+                status.textContent = "Geolocation tidak didukung browser Anda.";
+                return;
+            }
+
+            status.textContent = "Mencari lokasi...";
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    
+                    // Di implementasi nyata, gunakan Google Geocoding API untuk ubah Lat/Lng jadi Alamat
+                    // Karena butuh API Key berbayar, kita simulasi koordinat saja
+                    addressInput.value = `Koordinat: ${lat}, ${lng} (Silakan tambahkan detail jalan)`;
+                    status.textContent = "Lokasi ditemukan!";
+                    status.className = "text-xs text-green-500 italic";
+                },
+                () => {
+                    status.textContent = "Gagal mengambil lokasi. Pastikan GPS aktif.";
+                    status.className = "text-xs text-red-500 italic";
+                }
+            );
+        }
+
+        // --- 4. SUBMIT TO GOOGLE SHEETS ---
+        // PANDUAN BACKEND (GOOGLE APPS SCRIPT):
+        // 1. Buat Google Sheet baru.
+        // 2. Extensions > Apps Script.
+        // 3. Paste kode berikut di Apps Script:
+        /*
+            function doPost(e) {
+                var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+                var data = JSON.parse(e.postData.contents);
+                sheet.appendRow([new Date(), data.nama, data.whatsapp, data.kategori, data.merk, data.alamat]);
+                return ContentService.createTextOutput(JSON.stringify({"result":"success"})).setMimeType(ContentService.MimeType.JSON);
+            }
+        */
+        // 4. Deploy > New Deployment > Type: Web App > Who has access: Anyone.
+        // 5. Salin URL Script dan masukkan ke variabel di bawah.
+
+        const GOOGLE_SCRIPT_URL = 'MASUKKAN_URL_WEB_APP_SCRIPT_ANDA_DISINI'; 
+
+        const form = document.getElementById('tireOrderForm');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = 'MENGIRIM...';
+            btn.disabled = true;
+
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+
+            // Simulasi pengiriman (Ganti fetch di bawah untuk production)
+            // fetch(GOOGLE_SCRIPT_URL, {
+            //     method: 'POST',
+            //     body: JSON.stringify(data)
+            // })
+            
+            // Simulasi sukses (Timeout)
+            setTimeout(() => {
+                Swal.fire({
+                    title: 'Pesanan Diterima!',
+                    text: `Terima kasih ${data.nama}, Tim kami akan menghubungi WA: ${data.whatsapp} untuk konfirmasi ban ${data.merk}.`,
+                    icon: 'success',
+                    background: '#1a1a1a',
+                    color: '#fff',
+                    confirmButtonColor: '#ff2e00'
+                });
+                
+                form.reset();
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }, 1500);
+        });
+
+        // Initialize 3D on load
+        window.addEventListener('DOMContentLoaded', init3D);
+
+    </script>
+</body>
+</html>
